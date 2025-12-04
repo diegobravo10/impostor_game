@@ -7,120 +7,62 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Pantalla de Configuración Inicial -->
-    <div id="setup-screen" class="screen active">
-        <div class="container">
-            <h1>🎭 Juego del Impostor</h1>
-            <div class="setup-content">
-                <div class="category-selector">
-                    <h2>Selecciona una Categoría</h2>
-                    <select id="category-select" class="category-select">
-                        <option value="">-- Elige una categoría --</option>
-                        <option value="frutas">🍎 Frutas</option>
-                        <option value="deportes">⚽ Deportes</option>
-                        <option value="artistas">🎤 Artistas</option>
-                        <option value="paises">🌍 Países</option>
-                        <option value="lugares">📍 Lugares</option>
-                        <option value="objetos">🧸 Objetos</option>
-                        <option value="animales">🐶 Animales</option>
-                    </select>
-                </div>
+    <div class="container">
+        <h1>🎭 Juego del Impostor</h1>
 
-                <div class="players-setup">
-                    <h2>Número de Jugadores</h2>
-                    <div class="player-buttons">
-                        <button class="player-btn" data-players="4">4 Jugadores</button>
-                        <button class="player-btn" data-players="5">5 Jugadores</button>
-                        <button class="player-btn" data-players="6">6 Jugadores</button>
-                        <button class="player-btn" data-players="7">7 Jugadores</button>
-                        <button class="player-btn" data-players="8">8 Jugadores</button>
-                    </div>
-                </div>
-
-                <button id="start-game-btn" class="start-btn" disabled>
-                    🎯 Elegir Palabra Secreta
-                </button>
+        <!-- Pantalla de Configuración -->
+        <div id="setupScreen" class="screen active">
+            <div class="info-box">
+                <p><strong>¿Cómo jugar?</strong></p>
+                <p>Añade jugadores, elige una categoría y comienza. Un jugador será el impostor secreto que no conocerá la palabra.</p>
             </div>
+
+            <div class="input-group">
+                <label>Nombre del Jugador</label>
+                <input type="text" id="playerName" placeholder="Ingresa el nombre">
+            </div>
+            <button onclick="game.addPlayer()">➕ Añadir Jugador</button>
+
+            <div class="player-list" id="playerList"></div>
+
+            <div class="input-group category-selector">
+                <span class="category-icon" id="categoryIcon">🍎</span>
+                <select id="categorySelect" onchange="game.updateCategoryIcon()">
+                    <option value="frutas">🍎 Frutas</option>
+                    <option value="deportes">⚽ Deportes</option>
+                    <option value="artistas">🎤 Artistas</option>
+                    <option value="paises">🌍 Países</option>
+                    <option value="lugares">📍 Lugares</option>
+                    <option value="objetos">🧸 Objetos</option>
+                    <option value="animales">🐶 Animales</option>
+                </select>
+            </div>
+
+            <button onclick="game.startGame()">🎮 Iniciar Juego</button>
         </div>
-    </div>
 
-    <!-- Pantalla de Turnos -->
-    <div id="game-screen" class="screen">
-        <div class="container">
-            <div class="game-header">
-                <h2 id="current-player">Turno del Jugador 1</h2>
-                <div class="category-display">
-                    <span id="selected-category">Categoría: Frutas</span>
-                </div>
-            </div>
-
-            <div class="card-container">
-                <div class="card" id="player-card">
-                    <div class="card-inner">
-                        <div class="card-front">
-                            <div class="card-question">¿Cuál es tu rol?</div>
-                            <button class="reveal-btn">👁️ Revelar</button>
-                        </div>
-                        <div class="card-back">
-                            <div id="card-content"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="game-controls">
-                <button id="next-player-btn" class="next-btn">Siguiente Jugador</button>
-                <button id="start-voting-btn" class="voting-btn" style="display: none;">🗳️ Comenzar Votación</button>
-            </div>
+        <!-- Pantalla de Turno -->
+        <div id="turnScreen" class="screen">
+            <h2 style="text-align: center; margin-bottom: 20px;">Turno de: <span id="currentPlayer"></span></h2>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">Toca el botón cuando estés listo para ver tu rol</p>
+            <button onclick="game.revealRole()">👁️ Ver mi rol</button>
         </div>
-    </div>
 
-    <!-- Pantalla de Votación -->
-    <div id="voting-screen" class="screen">
-        <div class="container">
-            <h2>🗳️ Votación Final</h2>
-            <p>¿Quién crees que es el impostor?</p>
-
-            <div class="voting-buttons" id="voting-buttons">
-                <!-- Los botones de votación se generan dinámicamente -->
+        <!-- Pantalla de Revelación -->
+        <div id="revealScreen" class="screen">
+            <div id="roleCard" class="card">
+                <!-- Contenido dinámico -->
             </div>
-
-            <button id="show-results-btn" class="results-btn">📊 Ver Resultados</button>
+            <button onclick="game.nextTurn()">➡️ Siguiente Jugador</button>
         </div>
-    </div>
 
-    <!-- Pantalla de Resultados -->
-    <div id="results-screen" class="screen">
-        <div class="container">
-            <h2>🏆 Resultados Finales</h2>
-
-            <div class="results-content">
-                <div class="result-item">
-                    <span class="result-label">Categoría jugada:</span>
-                    <span id="result-category" class="result-value"></span>
-                </div>
-
-                <div class="result-item">
-                    <span class="result-label">Palabra secreta:</span>
-                    <span id="secret-word" class="result-value secret-word"></span>
-                </div>
-
-                <div class="result-item">
-                    <span class="result-label">El impostor fue:</span>
-                    <span id="impostor-name" class="result-value impostor"></span>
-                </div>
-
-                <div class="result-item">
-                    <span class="result-label">Los civiles fueron:</span>
-                    <span id="civilians-list" class="result-value"></span>
-                </div>
+        <!-- Pantalla de Resultados -->
+        <div id="resultsScreen" class="screen">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">🎉 Resultados del Juego</h2>
+            <div class="results" id="resultsContent">
+                <!-- Contenido dinámico -->
             </div>
-
-            <div class="game-outcome" id="game-outcome">
-                <!-- Aquí se mostrará si ganaron los civiles o el impostor -->
-            </div>
-
-            <button id="play-again-btn" class="play-again-btn">🔄 Jugar de Nuevo</button>
+            <button onclick="game.resetGame()">🔄 Jugar de Nuevo</button>
         </div>
     </div>
 
