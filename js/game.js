@@ -83,25 +83,22 @@ const game = {
         const input = document.getElementById('playerName');
         const name = input.value.trim();
 
-        // Validar que el nombre no esté vacío
         if (name === "") {
             alert("Por favor ingresa un nombre");
             return;
         }
 
-        // Validar que no exista el jugador
         if (this.players.includes(name)) {
             alert("Este jugador ya existe");
             return;
         }
 
-        // Añadir jugador al array
         this.players.push(name);
-        
-        // Limpiar el input
         input.value = "";
-        
-        // Actualizar la lista visual
+
+        // ✅ GUARDAR EN LOCALSTORAGE
+        localStorage.setItem("players", JSON.stringify(this.players));
+
         this.renderPlayerList();
     },
 
@@ -115,6 +112,10 @@ const game = {
      */
     removePlayer(index) {
         this.players.splice(index, 1);
+
+        // ✅ ACTUALIZAR LOCALSTORAGE
+        localStorage.setItem("players", JSON.stringify(this.players));
+
         this.renderPlayerList();
     },
 
@@ -139,7 +140,7 @@ const game = {
         list.innerHTML = this.players.map((player, index) => `
             <div class="player-item">
                 <span><strong>${index + 1}.</strong> ${player}</span>
-                <button class="remove-btn" onclick="game.removePlayer(${index})">❌</button>
+                <button class="remove-btn" onclick="game.removePlayer(${index})">X</button>
             </div>
         `).join('');
     },
@@ -212,12 +213,11 @@ const game = {
      */
     revealRole() {
         const card = document.getElementById('roleCard');
+        const btn = document.getElementById('nextBtn');
         const isImpostor = this.currentTurnIndex === this.impostorIndex;
+        const isLastPlayer = this.currentTurnIndex === this.players.length - 1;
 
         if (isImpostor) {
-            // ============================================
-            // CARTA DE IMPOSTOR (SIN PALABRA SECRETA)
-            // ============================================
             card.className = 'card impostor';
             card.innerHTML = `
                 <h2>😈 ERES EL IMPOSTOR 😈</h2>
@@ -228,9 +228,6 @@ const game = {
                 <p style="margin-top: 20px;">Intenta descubrir la palabra sin que te descubran</p>
             `;
         } else {
-            // ============================================
-            // CARTA DE CIVIL (CON PALABRA SECRETA)
-            // ============================================
             card.className = 'card';
             card.innerHTML = `
                 <h2>👤 ERES UN CIVIL</h2>
@@ -243,7 +240,13 @@ const game = {
             `;
         }
 
-        // Cambiar a pantalla de revelación
+        // ✅ Si es el último jugador, cambiar botón
+        if (isLastPlayer) {
+            btn.textContent = "📊 Ver Resultados";
+        } else {
+            btn.textContent = "➡️ Siguiente Jugador";
+        }
+
         this.showScreen('revealScreen');
     },
 
@@ -341,24 +344,16 @@ const game = {
      * - Vuelve a la pantalla inicial
      */
     resetGame() {
-        // Reiniciar todas las variables de estado
-        this.players = [];
-        this.currentTurnIndex = 0;
-        this.impostorIndex = -1;
-        this.selectedCategory = "frutas";
-        this.secretWord = "";
+    this.currentTurnIndex = 0;
+    this.impostorIndex = -1;
+    this.secretWord = "";
 
-        // Limpiar elementos de la interfaz
-        document.getElementById('playerName').value = "";
-        document.getElementById('categorySelect').value = "frutas";
-        
-        // Actualizar icono y lista
-        this.updateCategoryIcon();
-        this.renderPlayerList();
+    // ✅ NO BORRAR jugadores
+    document.getElementById('playerName').value = "";
 
-        // Volver a la pantalla de configuración
-        this.showScreen('setupScreen');
-    }
+    this.showScreen('setupScreen');
+}
+
 };
 
 // ===================================
@@ -370,3 +365,14 @@ const game = {
  */
 game.renderPlayerList();
 game.updateCategoryIcon();
+
+window.onload = () => {
+    const savedPlayers = localStorage.getItem("players");
+
+    if (savedPlayers) {
+        game.players = JSON.parse(savedPlayers);
+        game.renderPlayerList();
+    }
+
+    game.updateCategoryIcon();
+};
